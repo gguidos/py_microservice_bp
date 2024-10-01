@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+from pydantic import ValidationError
 from typing import List, Optional
 from src.core.entities.user import User
 from src.core.repositories.user_repository import UserRepository

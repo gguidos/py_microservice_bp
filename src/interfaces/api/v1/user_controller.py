@@ -13,7 +13,6 @@ router = APIRouter()
 
 # Use @inject decorator to inject the UserService dependency
 @router.post("/users/", response_model=User)
-@inject
 async def create_user(
     user_request: UserCreateRequest,
     service: UserService = Depends(get_user_service)  # Use Provide to inject UserService from Container

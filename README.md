@@ -30,7 +30,51 @@ Welcome to the Microservice Boilerplate repository! This project is a robust and
 
 ## Project Structure
 
-src/ ├── core/ # Core business logic and use-cases │ ├── entities/ # Entity definitions │ ├── repositories/ # Repository interfaces and implementations │ ├── use_cases/ # Use-cases implementing business rules ├── dependencies/ # FastAPI dependencies │ ├── request_id_dependency.py # Dependency to extract request ID ├── infrastructure/ # Infrastructure-related code and configurations │ ├── db/ # Database clients and configurations │ │ └── mongo_client.py # MongoDB client for async operations │ ├── logging_config.py # Centralized logging configuration │ ├── di_container.py # Dependency Injection container │ └── response_interceptor.py # Custom response interceptors ├── interfaces/ # Interface adapters │ ├── api/ # API layer with FastAPI routers │ │ └── v1/ │ │ └── user_controller.py # User-related API endpoints ├── middleware/ # Custom middleware (e.g., Request ID Middleware) ├── services/ # Service layer to coordinate use-cases and repositories │ └── user_service.py # User service with business logic coordination └── main.py # Entry point for the FastAPI application
+```bash
+.
+├── README.md
+├── logs
+│   ├── application.log
+│   └── errors.log
+├── post.http
+├── requirements.txt
+├── src
+│   ├── core
+│   │   ├── entities
+│   │   │   ├── base_entity.py
+│   │   │   └── user.py
+│   │   ├── repositories
+│   │   │   └── user_repository.py
+│   │   ├── schemas
+│   │   │   └── user_schema.py
+│   │   └── use_cases
+│   │       ├── create_user.py
+│   │       ├── get_all_users.py
+│   │       └── get_user.py
+│   ├── dependencies
+│   │   ├── request_id_dependency.py
+│   │   └── user_service_dependency.py
+│   ├── infrastructure
+│   │   ├── db
+│   │   │   └── mongo_client.py
+│   │   ├── di_container.py
+│   │   └── logging
+│   │       └── logging_config.py
+│   ├── interfaces
+│   │   └── api
+│   │       └── v1
+│   │           └── user_controller.py
+│   ├── main.py
+│   ├── middleware
+│   │   ├── logging_middleware.py
+│   │   ├── request_id_middleware.py
+│   │   └── response_interceptor.py
+│   └── services
+│       └── user_service.py
+└── structure.txt
+
+17 directories, 24 files
+```
 
 
 ## Getting Started
