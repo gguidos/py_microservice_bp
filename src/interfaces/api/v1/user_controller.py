@@ -19,8 +19,9 @@ container = Container()
 api_key_dependency = Depends(get_api_key) if container.config.environment() != "development" else None
 
 # Use @inject decorator to inject the UserService dependency
-@router.post("/users/", response_model=User,
-            dependencies=[Depends(RateLimiter(times=10, seconds=60))])
+@router.post("/users/",
+             response_model=User,
+             dependencies=[Depends(RateLimiter(times=10, seconds=60))])
 async def create_user(
     user_request: UserCreateRequest,
     service: UserService = Depends(get_user_service)  # Use Provide to inject UserService from Container
@@ -40,8 +41,7 @@ async def create_user(
 @router.get("/users/",
             response_model=List[User],
             dependencies=[
-                Depends(RateLimiter(times=2, seconds=60)),
-                api_key_dependency])
+                Depends(RateLimiter(times=2, seconds=4))])
 async def get_all_users(
     service: UserService = Depends(get_user_service)  # Use Provide to inject UserService from Container
 ):
@@ -50,8 +50,7 @@ async def get_all_users(
 
 @router.get("/users/id/{user_id}",
             response_model=User,
-            dependencies=[Depends(RateLimiter(times=2, seconds=60)),
-                          api_key_dependency])
+            dependencies=[Depends(RateLimiter(times=2, seconds=60))])
 async def get_user_by_id(
     user_id: str,
     service: UserService = Depends(get_user_service)):
@@ -63,8 +62,7 @@ async def get_user_by_id(
 
 @router.get("/users/email/{email}",
             response_model=User,
-            dependencies=[Depends(RateLimiter(times=2, seconds=60)),
-                          api_key_dependency])
+            dependencies=[Depends(RateLimiter(times=2, seconds=60))])
 async def get_user_by_email(
     email: str,
     service: UserService = Depends(get_user_service)):

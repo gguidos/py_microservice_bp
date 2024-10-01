@@ -15,17 +15,6 @@ async def health_check():
 @router.get("/readiness", tags=["Readiness"])
 async def readiness_check():
     """
-    Readiness check endpoint.
-    This endpoint checks if the service is ready to accept requests.
-    This could include database connections or other dependencies.
-    """
-    # Here, you can add checks like database connectivity, external API dependencies, etc.
-    # For demonstration purposes, we assume everything is ready.
-    return JSONResponse(status_code=200, content={"status": "Ready", "message": "Service is ready to accept traffic."})
-
-@router.get("/readiness", tags=["Readiness"])
-async def readiness_check():
-    """
     Advanced readiness check endpoint.
     This endpoint checks if the service is ready to accept requests by verifying dependencies.
     """
@@ -33,7 +22,7 @@ async def readiness_check():
     mongo_client = container.mongo_client()
 
     # Check if the MongoDB client is connected
-    if mongo_client.client is None or not mongo_client.client.is_primary:
+    if mongo_client.client is None:
         return JSONResponse(status_code=503, content={"status": "Not Ready", "message": "MongoDB client is not connected."})
 
     return JSONResponse(status_code=200, content={"status": "Ready", "message": "Service is ready to accept traffic."})
