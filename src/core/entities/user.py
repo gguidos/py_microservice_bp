@@ -1,9 +1,25 @@
-# src/core/entities/user.py
-
 from src.core.entities.base_entity import BaseEntity
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 from bson import ObjectId
 from typing import Optional
+import re
+
+def sanitize_input(value: str) -> str:
+    """
+    Sanitize input to remove potentially harmful characters or content.
+    This function removes HTML tags and certain special characters that may be used for script injection.
+
+    Args:
+        value (str): Input string to sanitize.
+
+    Returns:
+        str: Sanitized string.
+    """
+    # Replace HTML tags with an empty string
+    sanitized_value = re.sub(r"<.*?>", "", value)  # Remove HTML tags
+    # Remove characters like <, >, ", ', and \
+    sanitized_value = re.sub(r"[<>'\"\\]", "", sanitized_value)
+    return sanitized_value
 
 class ObjectIdStr(str):
     """Custom data type for handling ObjectId as a string."""
@@ -32,7 +48,7 @@ class User(BaseEntity):
     age: int
 
     class Config:
-        allow_population_by_field_name = True  # Allow alias fields to be populated
+        populate_by_name = True  # Allow alias fields to be populated
         arbitrary_types_allowed = True  # Allow custom types like ObjectIdStr
 
     @model_validator(mode='before')
@@ -42,3 +58,18 @@ class User(BaseEntity):
         if "_id" in values and isinstance(values["_id"], ObjectId):
             values["id"] = str(values["_id"])
         return values
+    
+    @field_validator("name")
+    def sanitize_name(cls, value):
+        """Sanitize the 'name' field to prevent script injection."""
+        return sanitize_input(value)
+
+    @field_validator("email")
+    def sanitize_email(cls, value):
+        """Sanitize and validate the 'email' field to prevent malicious content."""
+        # Use bleach to sanitize the email and remove any tags if necessary
+        sanitized_email = sanitize_input(value)
+        # Ensure the email is a valid format
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", sanitized_email):
+            raise ValueError(f"Invalid email address: {sanitized_email}")
+        return sanitized_email

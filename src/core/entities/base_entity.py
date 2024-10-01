@@ -20,6 +20,6 @@ class BaseEntity(BaseModel):
 
     class Config:
         # Configuration to allow aliasing fields and arbitrary types (if needed)
-        allow_population_by_field_name = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 

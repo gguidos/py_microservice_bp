@@ -1,6 +1,13 @@
-fastapi
-uvicorn
-motor
-python-dotenv
+aioiredis
+bleach
 dependency-injector
 email-validator
+fastapi
+fastapi-limiter
+grip
+motor
+pydantic
+pymongo
+python-dotenv
+setuptools
+uvicorn

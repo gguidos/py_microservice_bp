@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi_microservice
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
+      - DB_NAME=mydatabase
+      - DB_COLLECTION=users
+    depends_on:
+      - mongo
+    volumes:
+      - .:/app  # Mount the application code for development
+
+  mongo:
+    image: mongo:5.0.9
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

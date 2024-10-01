@@ -14,6 +14,8 @@ Welcome to the Microservice Boilerplate repository! This project is a robust and
   - [Using Docker](#using-docker)
 - [Endpoints](#endpoints)
 - [Testing](#testing)
+- [Security and Rate Limiting](#security-and-rate-limiting)
+- [Metrics, Monitoring, and Health Checks](#metrics-monitoring-and-health-checks)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -25,6 +27,13 @@ Welcome to the Microservice Boilerplate repository! This project is a robust and
 - **Request/Response Validation** using Pydantic models.
 - **Custom Middleware** for request tracking (e.g., Request ID).
 - **Unified Logging** configuration with support for JSON and file-based logging.
+- **Input Sanitization** for preventing XSS and SQL Injection attacks.
+- **Global Exception Handling** with a standardized error response format.
+- **Rate Limiting** to prevent abuse of the endpoints.
+- **Security Headers** such as `Strict-Transport-Security` and `Content-Security-Policy`.
+- **API Key Management** for securing the service.
+- **Health Checks and Readiness Probes**.
+- **Metrics and Monitoring** with Prometheus.
 - **Structured Project Layout** following the Clean Architecture principles.
 - **Dynamic Configuration** using environment variables with `dotenv`.
 
@@ -32,7 +41,9 @@ Welcome to the Microservice Boilerplate repository! This project is a robust and
 
 ```bash
 .
+├── Dockerfile
 ├── README.md
+├── docker-compose.yml
 ├── logs
 │   ├── application.log
 │   └── errors.log
@@ -52,30 +63,33 @@ Welcome to the Microservice Boilerplate repository! This project is a robust and
 │   │       ├── get_all_users.py
 │   │       └── get_user.py
 │   ├── dependencies
+│   │   ├── api_key_dependency.py
 │   │   ├── request_id_dependency.py
 │   │   └── user_service_dependency.py
 │   ├── infrastructure
 │   │   ├── db
 │   │   │   └── mongo_client.py
 │   │   ├── di_container.py
+│   │   ├── exception_handlers.py
 │   │   └── logging
 │   │       └── logging_config.py
 │   ├── interfaces
 │   │   └── api
 │   │       └── v1
+│   │           ├── health_check.py
 │   │           └── user_controller.py
 │   ├── main.py
 │   ├── middleware
 │   │   ├── logging_middleware.py
 │   │   ├── request_id_middleware.py
-│   │   └── response_interceptor.py
+│   │   ├── response_interceptor.py
+│   │   └── security_headers.py
 │   └── services
 │       └── user_service.py
 └── structure.txt
 
-17 directories, 24 files
+17 directories, 30 files
 ```
-
 
 ## Getting Started
 
@@ -120,6 +134,8 @@ Make sure you have the following installed on your system:
     DB_NAME=mydatabase
     DB_COLLECTION=users
     LOG_LEVEL=DEBUG
+    ENVIRONMENT=development
+    API_KEY=your-api-key-for-secure-access
     ```
 
 2. **Modify the `.env` file** according to your local or production configurations.
@@ -164,6 +180,9 @@ Here are some key endpoints provided by this boilerplate:
 - `POST /api/v1/users/`: Create a new user.
 - `GET /api/v1/users/id/{user_id}`: Retrieve a user by ID.
 - `GET /api/v1/users/email/{email}`: Retrieve a user by email.
+- `GET /internal/metrics`: Prometheus metrics endpoint.
+- `GET /api/v1/health`: Health endpoint.
+- `GET /api/v1/readiness`: Readiness endpoint.
 
 ### Sample Request to Create a User
 
@@ -184,6 +203,24 @@ POST /api/v1/users/
   "message": "Operation completed successfully."
 }
 ```
+
+## Security and Rate Limiting
+
+- `API Key Management`: An X-API-Key header is used for validating access to secure endpoints. The key is defined in the .env file.
+
+- `Rate Limiting`: Middleware to limit the number of requests a client can make in a defined time window. See rate_limiting_middleware.py.
+
+- `Security Headers`: Content-Security-Policy, Strict-Transport-Security, and X-Content-Type-Options headers are added using the security_config.py.
+
+## Metrics, Monitoring, and Health Checks
+
+- `Prometheus Metrics`: /internal/metrics endpoint provides real-time metrics. See metrics.py.
+
+- `Health Checks`: /api/v1/health endpoint provides application health status.
+
+- `Readiness Checks`: /api/v1/readiness endpoint provides database health status.
+
+- `Monitoring & Alerting`: Use Prometheus and Alertmanager for monitoring and alerting setups.
 
 ## Testing
 To run the tests, make sure you have pytest installed:

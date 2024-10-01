@@ -1,5 +1,7 @@
 .
+├── Dockerfile
 ├── README.md
+├── docker-compose.yml
 ├── logs
 │   ├── application.log
 │   └── errors.log
@@ -19,25 +21,29 @@
 │   │       ├── get_all_users.py
 │   │       └── get_user.py
 │   ├── dependencies
+│   │   ├── api_key_dependency.py
 │   │   ├── request_id_dependency.py
 │   │   └── user_service_dependency.py
 │   ├── infrastructure
 │   │   ├── db
 │   │   │   └── mongo_client.py
 │   │   ├── di_container.py
+│   │   ├── exception_handlers.py
 │   │   └── logging
 │   │       └── logging_config.py
 │   ├── interfaces
 │   │   └── api
 │   │       └── v1
+│   │           ├── health_check.py
 │   │           └── user_controller.py
 │   ├── main.py
 │   ├── middleware
 │   │   ├── logging_middleware.py
 │   │   ├── request_id_middleware.py
-│   │   └── response_interceptor.py
+│   │   ├── response_interceptor.py
+│   │   └── security_headers.py
 │   └── services
 │       └── user_service.py
 └── structure.txt
 
-17 directories, 24 files
+17 directories, 30 files

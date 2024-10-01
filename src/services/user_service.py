@@ -3,6 +3,7 @@ from pydantic import ValidationError
 from typing import List, Optional
 from src.core.entities.user import User
 from src.core.repositories.user_repository import UserRepository
+from src.infrastructure.exception_handlers import DuplicateUserException 
 from src.core.use_cases.create_user import CreateUser
 from src.core.use_cases.get_all_users import GetAllUsers
 from bson import ObjectId
@@ -35,30 +36,32 @@ class UserService:
         """Create a new user using the create_user use-case."""
         try:
             logger.info(f"Received request to create user with email: {email}")
+            
             # Check if a user with the same email already exists.
-            existing_users = await self.find_user_by_email(email=email)
-            if existing_users:
-                logger.info(f"User with email: {email} already exists")
-                raise ValueError(f"User with email {email} already exists.")
+            existing_user = await self.find_user_by_email(email=email)
+            if existing_user:
+                logger.info(f"User with email: {email} already exists.")
+                # Raise the custom DuplicateUserException instead of a ValueError
+                raise DuplicateUserException(email=email)
             
             # Execute user creation
             created_user = await self.create_user_use_case.execute(name=name, email=email, age=age)
             logger.info(f"User with email {email} created successfully: {created_user.dict()}")
             return created_user
-        
-        except ValueError as ve:
-            # Log specific validation errors
-            logger.error(f"Validation error: {ve}")
-            raise HTTPException(status_code=400, detail=str(ve))
-        
+
+        except DuplicateUserException as e:
+            # Log specific error and raise it to be caught by the global handler
+            logger.error(f"Duplicate user error: {e.detail}", extra={"request_id": self.request_id})
+            raise e
+
         except ValidationError as ve:
             # Log Pydantic validation errors
-            logger.error(f"Pydantic validation error: {ve}")
+            logger.error(f"Pydantic validation error: {ve.errors()}", extra={"request_id": self.request_id})
             raise HTTPException(status_code=422, detail=ve.errors())
-        
+
         except Exception as e:
             # Log general exceptions
-            logger.error(f"Failed to create user with email {email}: {e}")
+            logger.error(f"Failed to create user with email {email}: {e}", extra={"request_id": self.request_id})
             raise HTTPException(status_code=500, detail="An error occurred while creating the user")
 
     async def get_all_users(self) -> List[User]:

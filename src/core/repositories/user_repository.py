@@ -1,5 +1,3 @@
-# src/core/repositories/user_repository.py
-
 from datetime import datetime
 from typing import Dict, Any, List
 from src.infrastructure.db.mongo_client import MongoDBClient

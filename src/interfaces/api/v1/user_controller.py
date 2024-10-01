@@ -1,18 +1,26 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi_limiter import FastAPILimiter
+from fastapi_limiter.depends import RateLimiter
 from typing import List
 from src.core.entities.user import User
 from src.core.schemas.user_schema import UserCreateRequest, UserUpdateRequest
+from src.dependencies.api_key_dependency import get_api_key
 from src.services.user_service import UserService
-from src.dependencies.request_id_dependency import get_request_id
-from dependency_injector.wiring import inject, Provide
-from src.infrastructure.di_container import Container
 from src.dependencies.user_service_dependency import get_user_service
+from src.infrastructure.di_container import Container
 
 # Create a FastAPI router for user-related endpoints
 router = APIRouter()
 
+# Get configuration from the container to conditionally include dependencies
+container = Container()
+
+# Conditionally add API key protection based on environment
+api_key_dependency = Depends(get_api_key) if container.config.environment() != "development" else None
+
 # Use @inject decorator to inject the UserService dependency
-@router.post("/users/", response_model=User)
+@router.post("/users/", response_model=User,
+            dependencies=[Depends(RateLimiter(times=10, seconds=60))])
 async def create_user(
     user_request: UserCreateRequest,
     service: UserService = Depends(get_user_service)  # Use Provide to inject UserService from Container
@@ -29,36 +37,37 @@ async def create_user(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/users/", response_model=List[User])
-@inject
+@router.get("/users/",
+            response_model=List[User],
+            dependencies=[
+                Depends(RateLimiter(times=2, seconds=60)),
+                api_key_dependency])
 async def get_all_users(
-    service: UserService = Depends(Provide[Container.user_service])  # Use Provide to inject UserService from Container
-):
-    """Get all users."""
-    return await service.get_all_users()
-
-@router.get("/users2/", response_model=List[User])
-async def get_all_users_v2(
     service: UserService = Depends(get_user_service)  # Use Provide to inject UserService from Container
 ):
     """Get all users."""
     return await service.get_all_users()
 
-@router.get("/users/id/{user_id}", response_model=User)
-@inject
+@router.get("/users/id/{user_id}",
+            response_model=User,
+            dependencies=[Depends(RateLimiter(times=2, seconds=60)),
+                          api_key_dependency])
 async def get_user_by_id(
     user_id: str,
-    request_id: str = Depends(get_request_id),
-    service: UserService = Depends(Provide[Container.user_service])):
+    service: UserService = Depends(get_user_service)):
     """Get a user by ID."""
     user = await service.find_user_by_id(user_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-@router.get("/users/email/{email}", response_model=User)
-@inject
-async def get_user_by_email(email: str, service: UserService = Depends(Provide[Container.user_service])):
+@router.get("/users/email/{email}",
+            response_model=User,
+            dependencies=[Depends(RateLimiter(times=2, seconds=60)),
+                          api_key_dependency])
+async def get_user_by_email(
+    email: str,
+    service: UserService = Depends(get_user_service)):
     """Get a user by email."""
     user = await service.find_user_by_email(email=email)
     if not user:

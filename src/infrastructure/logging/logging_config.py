@@ -37,7 +37,6 @@ LOGGING_CONFIG = {
             "filename": "logs/errors.log",
         },
     },
-    "level": "ERROR",
     "loggers": {
         "": {
             "handlers": ["console", "file", "error_file"],
@@ -64,4 +63,5 @@ LOGGING_CONFIG = {
 
 def setup_logging():
     """Set up logging configuration."""
+    logging.basicConfig(level=logging.WARNING)
     logging.config.dictConfig(LOGGING_CONFIG)
