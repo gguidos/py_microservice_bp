@@ -1,14 +1,13 @@
-# main.py
-
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from src.infrastructure.request_id_middleware import RequestIDMiddleware
-from src.infrastructure.logging.logging_middleware import LoggingMiddleware
-from src.infrastructure.response_interceptor import ResponseFormatMiddleware
+from src.middleware.request_id_middleware import RequestIDMiddleware
+from src.middleware.logging_middleware import LoggingMiddleware
+from src.middleware.response_interceptor import ResponseFormatMiddleware
 from contextlib import asynccontextmanager
 from src.infrastructure.di_container import Container
 from src.infrastructure.logging.logging_config import setup_logging
 from src.interfaces.api.v1.user_controller import router as user_router
+from src.middleware.request_id_middleware import RequestIDMiddleware
 from dotenv import load_dotenv
 import logging
 
@@ -28,6 +27,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins for development
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
+
+app.add_middleware(RequestIDMiddleware)
 app.add_middleware(LoggingMiddleware)
 # Register the middleware to intercept all responses
 app.add_middleware(ResponseFormatMiddleware)
@@ -52,7 +60,7 @@ app.container = container
 # Include the user router with dependency injection configured
 app.include_router(user_router, prefix="/api/v1", tags=["users"])
 
-# Use an async context manager for lifespan events instead of on_event
+# Use an async context manager for lifespan events
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan event manager to handle startup and shutdown events."""

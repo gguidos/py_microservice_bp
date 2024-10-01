@@ -1,13 +1,13 @@
-# src/interfaces/api/v1/user_controller.py
-
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from src.core.entities.user import User
 from src.core.schemas.user_schema import UserCreateRequest, UserUpdateRequest
 from src.services.user_service import UserService
+from src.dependencies.request_id_dependency import get_request_id
 from dependency_injector.wiring import inject, Provide
 from src.infrastructure.di_container import Container
-import logging
+from src.dependencies.user_service_dependency import get_user_service
+
 # Create a FastAPI router for user-related endpoints
 router = APIRouter()
 
@@ -16,7 +16,7 @@ router = APIRouter()
 @inject
 async def create_user(
     user_request: UserCreateRequest,
-    service: UserService = Depends(Provide[Container.user_service])  # Use Provide to inject UserService from Container
+    service: UserService = Depends(get_user_service)  # Use Provide to inject UserService from Container
 ):
     """Create a new user."""
     try:
@@ -38,9 +38,19 @@ async def get_all_users(
     """Get all users."""
     return await service.get_all_users()
 
+@router.get("/users2/", response_model=List[User])
+async def get_all_users_v2(
+    service: UserService = Depends(get_user_service)  # Use Provide to inject UserService from Container
+):
+    """Get all users."""
+    return await service.get_all_users()
+
 @router.get("/users/id/{user_id}", response_model=User)
 @inject
-async def get_user_by_id(user_id: str, service: UserService = Depends(Provide[Container.user_service])):
+async def get_user_by_id(
+    user_id: str,
+    request_id: str = Depends(get_request_id),
+    service: UserService = Depends(Provide[Container.user_service])):
     """Get a user by ID."""
     user = await service.find_user_by_id(user_id=user_id)
     if not user:

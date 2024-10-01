@@ -1,5 +1,3 @@
-# src/infrastructure/logging_config.py
-
 import logging
 import logging.config
 from pathlib import Path
@@ -39,6 +37,7 @@ LOGGING_CONFIG = {
             "filename": "logs/errors.log",
         },
     },
+    "level": "ERROR",
     "loggers": {
         "": {
             "handlers": ["console", "file", "error_file"],
@@ -48,6 +47,16 @@ LOGGING_CONFIG = {
         "uvicorn.access": {
             "handlers": ["console"],
             "level": "INFO",
+            "propagate": False,
+        },
+        "uvicorn.error": {
+            "handlers": ["console", "error_file"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+        "pymongo": {  # Add a separate logger for pymongo
+            "handlers": ["console"],
+            "level": "WARNING",  # Set the level to WARNING to suppress DEBUG logs
             "propagate": False,
         },
     },

@@ -23,24 +23,41 @@ def mongo_dict_to_user(mongo_dict: dict) -> User:
 class UserService:
     """Service layer for managing users."""
 
-    def __init__(self, user_repository: UserRepository):
+    def __init__(self, user_repository: UserRepository, request_id: Optional[str] = None):
         self.user_repository = user_repository
+        self.request_id = request_id
         self.create_user_use_case = CreateUser(user_repository)
         self.get_all_users_use_case = GetAllUsers(user_repository)
 
     async def create_user(self, name: str, email: str, age: int) -> User:
         """Create a new user using the create_user use-case."""
-        logger.info(f"Creating user with email: {email}")
-        # Check if a user with the same email already exists.
-        existing_users = await self.find_user_by_email(email=email)
-        if existing_users:
-            logger.error(f"User with email: {email} already exists")
-            raise ValueError(f"User with email {email} already exists.")
         try:
-            logger.info(f"User with email {email} created successfully")
-            return await self.create_user_use_case.execute(name=name, email=email, age=age)
+            logger.info(f"Received request to create user with email: {email}")
+            # Check if a user with the same email already exists.
+            existing_users = await self.find_user_by_email(email=email)
+            if existing_users:
+                logger.info(f"User with email: {email} already exists")
+                raise ValueError(f"User with email {email} already exists.")
+            
+            # Execute user creation
+            created_user = await self.create_user_use_case.execute(name=name, email=email, age=age)
+            logger.info(f"User with email {email} created successfully: {created_user.dict()}")
+            return created_user
+        
+        except ValueError as ve:
+            # Log specific validation errors
+            logger.error(f"Validation error: {ve}")
+            raise HTTPException(status_code=400, detail=str(ve))
+        
+        except ValidationError as ve:
+            # Log Pydantic validation errors
+            logger.error(f"Pydantic validation error: {ve}")
+            raise HTTPException(status_code=422, detail=ve.errors())
+        
         except Exception as e:
+            # Log general exceptions
             logger.error(f"Failed to create user with email {email}: {e}")
+            raise HTTPException(status_code=500, detail="An error occurred while creating the user")
 
     async def get_all_users(self) -> List[User]:
         """Get all users using the get_all_users use-case."""

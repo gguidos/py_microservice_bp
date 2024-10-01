@@ -1,5 +1,3 @@
-# src/infrastructure/logging_middleware.py
-
 import logging
 from time import time
 from starlette.middleware.base import BaseHTTPMiddleware

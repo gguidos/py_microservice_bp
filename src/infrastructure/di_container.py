@@ -1,5 +1,3 @@
-# src/infrastructure/di_container.py
-
 from dependency_injector import containers, providers
 from src.infrastructure.db.mongo_client import MongoDBClient
 from src.core.repositories.user_repository import UserRepository
