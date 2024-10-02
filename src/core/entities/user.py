@@ -2,6 +2,7 @@ from src.core.entities.base_entity import BaseEntity
 from pydantic import Field, field_validator, model_validator
 from bson import ObjectId
 from typing import Optional
+import bleach
 import re
 
 def sanitize_input(value: str) -> str:
@@ -16,9 +17,8 @@ def sanitize_input(value: str) -> str:
         str: Sanitized string.
     """
     # Replace HTML tags with an empty string
-    sanitized_value = re.sub(r"<.*?>", "", value)  # Remove HTML tags
-    # Remove characters like <, >, ", ', and \
-    sanitized_value = re.sub(r"[<>'\"\\]", "", sanitized_value)
+    sanitized_value = bleach.clean(value, tags=[], attributes={}, strip=True)  # Remove all HTML tags
+    sanitized_value = re.sub(r"[<>\"']", "", sanitized_value)
     return sanitized_value
 
 class ObjectIdStr(str):

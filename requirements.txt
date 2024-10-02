@@ -1,4 +1,3 @@
-aioiredis
 bleach
 dependency-injector
 email-validator
@@ -6,8 +5,10 @@ fastapi
 fastapi-limiter
 grip
 motor
+prometheus-client
 pydantic
 pymongo
 python-dotenv
+redis
 setuptools
 uvicorn
